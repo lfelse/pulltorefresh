@@ -2,16 +2,15 @@ package io.lf.pulltorefresh.view;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.support.v4.view.NestedScrollingChild;
+import android.support.v4.widget.NestedScrollView;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
+import android.widget.AbsListView;
 import android.widget.ImageView;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -24,7 +23,7 @@ import io.lf.pulltorefresh.R;
 /**
  * Created by adly on 2016/6/10.
  */
-public class PullToRefreshListView extends ListView{
+public class PullToRefreshListView extends ListView implements AbsListView.OnScrollListener {
 
     private ImageView iv_arrow;
     private ProgressBar progress;
@@ -40,6 +39,10 @@ public class PullToRefreshListView extends ListView{
     private int currentState = PULL_REFRESH;
     private int downY;
     private View headerView;
+    private View footerView;
+    private int footerViewHeight;
+
+    private boolean isLoadingMore = false;
 
     public PullToRefreshListView(Context context) {
         this(context, null);
@@ -55,8 +58,10 @@ public class PullToRefreshListView extends ListView{
     }
 
     private void init() {
+        setOnScrollListener(this);
         initHeaderView();
         initRotateAnimation();
+        initFooterView();
     }
 
     private void initHeaderView() {
@@ -89,6 +94,13 @@ public class PullToRefreshListView extends ListView{
 
     }
 
+    private void initFooterView() {
+        footerView = View.inflate(getContext(), R.layout.layout_footer, null);
+        footerView.measure(0, 0);
+        footerViewHeight = footerView.getMeasuredHeight();
+        footerView.setPadding(0, -footerViewHeight, 0, 0);
+        addFooterView(footerView);
+    }
 
     // fixes in listView.setNestedScrollingEnabled(true);
     //private static final int MAXIMUM_LIST_ITEMS_VIEWABLE = 99;
@@ -149,7 +161,7 @@ public class PullToRefreshListView extends ListView{
                     break;
                 }
                 int deltaY = (int) (ev.getY() - downY);
-                Log.v(PullToRefreshListView.class.getSimpleName(), "downy: " + downY + "\ty: " + ev.getY() + "\tdy: " + deltaY + "\theight: " + headerViewHeight);
+                //Log.v(PullToRefreshListView.class.getSimpleName(), "downy: " + downY + "\ty: " + ev.getY() + "\tdy: " + deltaY + "\theight: " + headerViewHeight);
                 if(getFirstVisiblePosition() == 0 && deltaY > 0) {
                     headerView.setPadding(0, -headerViewHeight + deltaY, 0, 0);
 
@@ -201,6 +213,27 @@ public class PullToRefreshListView extends ListView{
         }
     }
 
+    @Override
+    public void onScrollStateChanged(AbsListView view, int scrollState) {
+        Log.v(PullToRefreshListView.class.getSimpleName(), "lastVisiblePosition: " + getLastVisiblePosition() +
+                "\tgetCount: " + getCount());
+        if(scrollState == OnScrollListener.SCROLL_STATE_IDLE
+                && getLastVisiblePosition() == (getCount() - 1) && !isLoadingMore){
+
+            isLoadingMore = !isLoadingMore;
+            footerView.setPadding(0, 0, 0, 0);
+            setSelection(getCount());
+            if(listener!=null){
+                listener.onLoadingMore();
+            }
+        }
+    }
+
+    @Override
+    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+
+    }
+
     private OnRefreshListener listener;
 
     public void setOnRefreshListener(OnRefreshListener listener){
@@ -209,15 +242,21 @@ public class PullToRefreshListView extends ListView{
 
     public interface OnRefreshListener{
         void onRefreshing();
+        void onLoadingMore();
     }
 
     public void onRefreshComplete(){
-        headerView.setPadding(0, -headerViewHeight, 0, 0);
-        currentState = PULL_REFRESH;
-        progress.setVisibility(INVISIBLE);
-        iv_arrow.setVisibility(VISIBLE);
-        tv_state.setText("下拉刷新");
-        tv_stamp.setText("最后更新时间: " + getCurrentTime());
+        if(isLoadingMore){
+            footerView.setPadding(0, -footerViewHeight, 0, 0);
+            isLoadingMore = !isLoadingMore;
+        }else {
+            headerView.setPadding(0, -headerViewHeight, 0, 0);
+            currentState = PULL_REFRESH;
+            progress.setVisibility(INVISIBLE);
+            iv_arrow.setVisibility(VISIBLE);
+            tv_state.setText("下拉刷新");
+            tv_stamp.setText("最后更新时间: " + getCurrentTime());
+        }
     }
 
     private String getCurrentTime() {

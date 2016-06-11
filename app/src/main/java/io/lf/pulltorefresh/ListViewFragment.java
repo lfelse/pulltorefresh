@@ -62,6 +62,21 @@ public class ListViewFragment extends Fragment {
                     }
                 }).start();
             }
+
+            @Override
+            public void onLoadingMore() {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        SystemClock.sleep(2000);
+                        adapter.lists.add("加载更多的数据 0");
+                        adapter.lists.add("加载更多的数据 1");
+                        adapter.lists.add("加载更多的数据 2");
+
+                        handler.sendEmptyMessage(0);
+                    }
+                }).start();
+            }
         });
 
         return rootView;
@@ -96,7 +111,7 @@ public class ListViewFragment extends Fragment {
                 convertView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
                 float density = getResources().getDisplayMetrics().density;
                 int padding = (int) (12 * density);
-                convertView.setPadding(padding, padding, padding, padding);
+                convertView.setPadding(padding, 0, padding, padding);
             }
             ((TextView) convertView).setText(lists.get(position));
 
