@@ -2,7 +2,6 @@ package io.lf.pulltorefresh.view;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.support.v4.widget.NestedScrollView;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;

@@ -5,6 +5,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -47,7 +48,8 @@ public class RecyclerViewFragment extends Fragment {
             textView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
             float density = getResources().getDisplayMetrics().density;
             int padding = (int) (12 * density);
-            textView.setPadding(padding, padding, padding, padding);
+            textView.setPadding(padding, 0, padding, padding);
+            textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18.0f);
 
             return new ViewHolder(textView);
         }

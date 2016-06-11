@@ -8,6 +8,7 @@ import android.os.Message;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -113,6 +114,7 @@ public class ListViewFragment extends Fragment {
                 int padding = (int) (12 * density);
                 convertView.setPadding(padding, 0, padding, padding);
             }
+            ((TextView) convertView).setTextSize(TypedValue.COMPLEX_UNIT_SP, 18.0f);
             ((TextView) convertView).setText(lists.get(position));
 
             return convertView;
